@@ -1,61 +1,289 @@
 <html>
 
-    <head>
-        <script src="/icons.js" crossorigin="anonymous"></script>
-        <meta name="viewport" content="initial-scale=1.0, width=device-width, height=device-height">
-        <style>
-        </style>
-        <script>
-            function handleMessage(data) {
-                console.log(`TileMedia: Received '${data}'`);
+<head>
+    <script src="/icons.js" crossorigin="anonymous"></script>
+    <meta name="viewport" content="initial-scale=1.0, width=device-width, height=device-height">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
 
-                data = JSON.parse(data);
-                IPS.data = data;
-                for (let key in data) {
-                    if(!IPS.subscriptions[key]) continue;
-                    IPS.subscriptions[key].forEach(cb => cb(key, data[key]));
-                }
+        body {
+            margin: 0;
+            padding: 0;
+
+            /* needed to disable bounce scrolling */
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        #container {
+            font-size: 12pt;
+
+            overflow-y: hidden;
+            overflow-x: auto;
+
+            width: 100%;
+            height: 100%;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            align-items: center;
+
+            padding-top: 50px;
+            padding-left: 20px;
+            padding-right: 20px;
+
+            background-size: cover;
+        }
+
+        #cover {
+            flex-shrink: 0;
+            flex-grow: 0;
+            width: 60px;
+            height: 60px;
+            background-size: contain;
+            border-radius: 8px;
+            border: 2px solid white;
+        }
+
+        #details {
+            margin-left: 20px;
+            max-width: calc(100% - 15px - 50px - 60px);
+            flex-grow: 1;
+            justify-content: center;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #details div {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-width: 50px;
+        }
+
+        .actions .action {
+            margin: 8px;
+            color: var(--accent-color);
+        }
+
+        #right {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            padding-left: 20px;
+        }
+
+        #bg {
+            background-size: cover;
+            background-position: center;
+            filter: blur(3px) brightness(0.6);
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .row {
+            z-index: 1;
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #position {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 8px;
+            background-color: white;
+            opacity: 50%;
+        }
+
+        #volume {
+            margin: 10px;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            min-width: 150px;
+        }
+
+        .slider {
+            appearance: none;
+            -webkit-appearance: none;
+            background-color: white;
+            outline: none;
+            flex-grow: 1;
+            border-radius: 3px;
+            background-color: white;
+            height: 4px;
+            margin-left: 15px;
+        }
+
+        .slider::-webkit-slider-thumb {
+            appearance: none;
+            -webkit-appearance: none;
+            height: 20px;
+            position: relative;
+            border-radius: 10px;
+            width: 20px;
+            background-color: var(--accent-color);
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+    <script>
+        function handleMessage(data) {
+            console.log(`TileMedia: Received '${data}'`);
+
+            data = JSON.parse(data);
+            IPS.data = data;
+            for (let key in data) {
+                if (!IPS.subscriptions[key]) continue;
+                IPS.subscriptions[key].forEach(cb => cb(key, data[key]));
             }
+        }
 
-            const Config = {
-                hasTitle: '{{HAS_TITLE}}',
-                hasArtist: '{{HAS_ARTIST}',
-                hasVolume: '{{HAS_VOLUME}}',
-                hasCover: '{{HAS_COVER}}',
-                hasState: '{{HAS_STATE}}',
-                hasPosition: '{{HAS_POSITION}}',
-                hasDuration: '{{HAS_DURATION}}',
-                hasPlay: '{{HAS_PLAY}}',
-                hasPause: '{{HAS_PAUSE}}',
-                hasStop: '{{HAS_STOP}}',
-                hasNext: '{{HAS_NEXT}}',
-                hasPrev: '{{HAS_PREV}}'
-            };
+        const Config = {
+            hasTitle: '{{HAS_TITLE}}',
+            hasArtist: '{{HAS_ARTIST}}',
+            hasVolume: '{{HAS_VOLUME}}',
+            hasCover: '{{HAS_COVER}}',
+            hasState: '{{HAS_STATE}}',
+            hasPosition: '{{HAS_POSITION}}',
+            hasDuration: '{{HAS_DURATION}}',
+            hasPlay: '{{HAS_PLAY}}',
+            hasPause: '{{HAS_PAUSE}}',
+            hasStop: '{{HAS_STOP}}',
+            hasNext: '{{HAS_NEXT}}',
+            hasPrev: '{{HAS_PREV}}'
+        };
 
-            const IPS = {
-                subscriptions: {},
-                data: null,
+        const IPS = {
+            subscriptions: {},
+            data: null,
 
-                subscribe: function (ident, cb) {
-                    if (!this.subscriptions[ident]) {
-                        this.subscriptions[ident] = [];
-                    }
-                    this.subscriptions[ident].push(cb);
-                    if (this.data) {
-                        setTimeout(() => {
-                            cb(ident, this.data[ident]);
-                        }, 0);
-                    }
-                },
-
-                set: function (ident, value) {
-                    requestAction(ident, value);
+            subscribe: function (ident, cb) {
+                if (!this.subscriptions[ident]) {
+                    this.subscriptions[ident] = [];
                 }
-            };
-        </script>
-    </head>
+                this.subscriptions[ident].push(cb);
+                if (this.data) {
+                    setTimeout(() => {
+                        cb(ident, this.data[ident]);
+                    }, 0);
+                }
+            },
 
-    <body>
-    </body>
+            set: function (ident, value) {
+                requestAction(ident, value);
+            }
+        };
+
+        function capitalizeFirstLetter(val) {
+            return String(val).charAt(0).toUpperCase() + String(val).slice(1);
+        }
+        setTimeout(() => {
+            ['play', 'pause', 'stop', 'prev', 'next'].forEach((key) => {
+                const div = document.getElementById('action-' + key);
+                if (!Config['has' + capitalizeFirstLetter(key)]) {
+                    div.classList.add('hidden');
+                    return;
+                }
+                div.onclick = () => { requestAction(key, true); };
+            });
+
+
+            const slider = document.querySelector('#volume .slider');
+            slider.oninput = () => {
+                requestAction('volume', slider.value);
+            };
+        }, 0);
+        IPS.subscribe('volume', (id, value) => {
+            const slider = document.querySelector('#volume .slider');
+            slider.value = value;
+        });
+        IPS.subscribe('state', (id, value) => {
+            const isPlaying = value === 'play';
+            document.getElementById('action-play').classList.toggle('hidden', isPlaying);
+            document.getElementById('action-pause').classList.toggle('hidden', !isPlaying);
+
+        });
+        IPS.subscribe('cover', (id, value) => {
+            const div = document.getElementById('cover');
+            const bg = document.getElementById('bg');
+            if (!value) {
+                div.style.backgroundImage = '';
+                bg.style.backgroundImage = '';
+            } else {
+                div.style.backgroundImage = `url('${value}')`;
+                bg.style.backgroundImage = `url('${value}')`;
+            }
+        });
+        IPS.subscribe('title', (id, value) => {
+            const div = document.getElementById('title');
+            div.innerText = value;
+        });
+        IPS.subscribe('artist', (id, value) => {
+            const div = document.getElementById('artist');
+            div.innerText = value;
+        });
+        function updateProgress() {
+            let progress = IPS.data.position / IPS.data.duration;
+            if (isNaN(progress)) progress = 0;
+            const div = document.getElementById('position');
+            div.style.width = progress + '%';
+        }
+        IPS.subscribe('duration', updateProgress);
+        IPS.subscribe('position', updateProgress);
+    </script>
+</head>
+
+<body>
+    <div id="container">
+        <div id="bg"></div>
+        <div id="position"></div>
+        <div class="row">
+            <div id="cover"></div>
+            <div id="details">
+                <div id="artist">-</div>
+                <div id="title">-</div>
+            </div>
+            <div class="actions">
+                <div class="action" id="action-stop"><i class="fa-light fa-power-off fa-2xl"></i></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="actions">
+                <div class="action" id="action-prev"><i class="fa-light fa-backward-step fa-xl"></i></div>
+                <div class="action" id="action-play"><i class="fa-light fa-play fa-2xl"></i></div>
+                <div class="action" id="action-pause"><i class="fa-light fa-pause fa-2xl"></i></div>
+                <div class="action" id="action-next"><i class="fa-light fa-forward-step fa-xl"></i></div>
+            </div>
+            <div id="volume">
+                <i class="fa-light fa-volume"></i>
+                <input type="range" min="1" max="100" value="0" class="slider" />
+                <div>
+                </div>
+                <div id="progress">
+                    <div></div>
+                    <div>
+                    </div>
+</body>
 
 </html>
