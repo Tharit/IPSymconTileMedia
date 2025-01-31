@@ -1,0 +1,61 @@
+<html>
+
+    <head>
+        <script src="/icons.js" crossorigin="anonymous"></script>
+        <meta name="viewport" content="initial-scale=1.0, width=device-width, height=device-height">
+        <style>
+        </style>
+        <script>
+            function handleMessage(data) {
+                console.log(`TileMedia: Received '${data}'`);
+
+                data = JSON.parse(data);
+                IPS.data = data;
+                for (let key in data) {
+                    if(!IPS.subscriptions[key]) continue;
+                    IPS.subscriptions[key].forEach(cb => cb(key, data[key]));
+                }
+            }
+
+            const Config = {
+                hasTitle: '{{HAS_TITLE}}',
+                hasArtist: '{{HAS_ARTIST}',
+                hasVolume: '{{HAS_VOLUME}}',
+                hasCover: '{{HAS_COVER}}',
+                hasState: '{{HAS_STATE}}',
+                hasPosition: '{{HAS_POSITION}}',
+                hasDuration: '{{HAS_DURATION}}',
+                hasPlay: '{{HAS_PLAY}}',
+                hasPause: '{{HAS_PAUSE}}',
+                hasStop: '{{HAS_STOP}}',
+                hasNext: '{{HAS_NEXT}}',
+                hasPrev: '{{HAS_PREV}}'
+            };
+
+            const IPS = {
+                subscriptions: {},
+                data: null,
+
+                subscribe: function (ident, cb) {
+                    if (!this.subscriptions[ident]) {
+                        this.subscriptions[ident] = [];
+                    }
+                    this.subscriptions[ident].push(cb);
+                    if (this.data) {
+                        setTimeout(() => {
+                            cb(ident, this.data[ident]);
+                        }, 0);
+                    }
+                },
+
+                set: function (ident, value) {
+                    requestAction(ident, value);
+                }
+            };
+        </script>
+    </head>
+
+    <body>
+    </body>
+
+</html>

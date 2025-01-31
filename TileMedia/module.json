@@ -1,0 +1,12 @@
+{
+	"id": "{EBD9DDEB-7141-4D95-8813-23CE9F72B85C}",
+	"name": "TileMedia",
+	"type": 3,
+	"vendor": "MK",
+	"aliases": [],
+	"parentRequirements": [],
+	"childRequirements": [],
+	"implemented": [],
+	"prefix": "Tile",
+    "url": "https://github.com/tharit/IPSymconTileMedia"
+}

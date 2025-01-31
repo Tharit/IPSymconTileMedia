@@ -1,0 +1,53 @@
+{
+    "elements": [
+        {
+            "name": "title",
+            "type": "SelectVariable",
+            "caption": "Title variable"
+        },{
+            "name": "artist",
+            "type": "SelectVariable",
+            "caption": "Artist variable"
+        },{
+            "name": "volume",
+            "type": "SelectVariable",
+            "caption": "Volume variable"
+        },{
+            "name": "cover",
+            "type": "SelectVariable",
+            "caption": "Cover URL variable"
+        },{
+            "name": "state",
+            "type": "SelectVariable",
+            "caption": "Playback state variable"
+        },{
+            "name": "position",
+            "type": "SelectVariable",
+            "caption": "Position variable"
+        },{
+            "name": "duration",
+            "type": "SelectVariable",
+            "caption": "Duration variable"
+        },{
+            "name": "stop",
+            "type": "SelectScript",
+            "caption": "Stop script"
+        },{
+            "name": "play",
+            "type": "SelectScript",
+            "caption": "Play script"
+        },{
+            "name": "pause",
+            "type": "SelectScript",
+            "caption": "Pause script"
+        },{
+            "name": "prev",
+            "type": "SelectScript",
+            "caption": "Prev script"
+        },{
+            "name": "next",
+            "type": "SelectScript",
+            "caption": "Next script"
+        }
+    ]
+}
