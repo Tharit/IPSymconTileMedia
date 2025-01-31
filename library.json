@@ -1,12 +1,12 @@
 {
     "id": "{56B7E305-712C-4F11-ACD4-5CF952F48B4F}",
-    "name": "Tile Icon Counter",
+    "name": "Tile Media",
     "author": "Martin Kleinhans",
-    "url": "https://github.com/tharit/IPSymconTileIconCounter",
+    "url": "https://github.com/tharit/IPSymconTileMedia",
     "compatibility": {
         "version": "7.1"
     },
     "version": "1.0",
-    "build": 6,
+    "build": 7,
     "date": 1
 }
