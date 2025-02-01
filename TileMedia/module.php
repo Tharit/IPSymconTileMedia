@@ -41,9 +41,14 @@ class TileMedia extends IPSModule
         foreach(self::PROPERTIES as $property) {
             $objectId = $this->ReadPropertyInteger($property);
             if ($SenderID === $objectId) {
-                $this->UpdateVisualizationValue(json_encode([
-                    $property => GetValue($objectId)
-                ]));
+		    $message = [
+			    $property => GetValue($objectId)
+		    ];
+		    if($property === 'position') {
+			    $varInfo = IPS_GetVariable($objectId);
+			    $message['position_changed'] = $varInfo['VariableChanged'];
+		    }
+		    $this->UpdateVisualizationValue(json_encode($message));
                 return;
             }
         }
@@ -54,7 +59,7 @@ class TileMedia extends IPSModule
 	    if(in_array($Ident, ['volume'])) {
             $var = $this->ReadPropertyInteger($Ident);
             if($var && @IPS_GetVariable($var)) {
-		        SetValue($var, $Value);
+		        RequestAction($var, $Value);
 	        }
         } else if(in_array($Ident, self::ACTIONS)) {
             $script = $this->ReadPropertyInteger($Ident);
@@ -90,7 +95,11 @@ class TileMedia extends IPSModule
         foreach(self::PROPERTIES as $property) {
             $objectId = $this->ReadPropertyInteger($property);
             if(!$objectId) continue;
-            $array[$property] = GetValue($objectId);
+	    $array[$property] = GetValue($objectId);
+	    if($property === 'position') {
+		    $varInfo = IPS_GetVariable($objectId);
+		    $array['position_changed'] = $varInfo['VariableChanged'];
+	    }
          }
         return json_encode($array);
     }

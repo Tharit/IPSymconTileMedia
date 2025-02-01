@@ -176,8 +176,8 @@
             console.log(`TileMedia: Received '${data}'`);
 
             data = JSON.parse(data);
-            IPS.data = data;
             for (let key in data) {
+		IPS.data[key] = data[key];
                 if (!IPS.subscriptions[key]) continue;
                 IPS.subscriptions[key].forEach(cb => cb(key, data[key]));
             }
@@ -200,8 +200,7 @@
 
         const IPS = {
             subscriptions: {},
-            data: null,
-
+	    data: {},
             subscribe: function (ident, cb) {
                 if (!this.subscriptions[ident]) {
                     this.subscriptions[ident] = [];
@@ -282,13 +281,15 @@
             div.innerText = value;
         });
         function updateProgress() {
-            let progress = IPS.data.position / IPS.data.duration;
+	    let inc = Math.ceil((Date.now()/1000) - IPS.data['position_changed']);
+            let progress = Math.min(1, (IPS.data.position + inc) / IPS.data.duration);
             if (isNaN(progress)) progress = 0;
             const div = document.getElementById('position');
             div.style.width = Math.round(progress * 100) + '%';
         }
         IPS.subscribe('duration', updateProgress);
         IPS.subscribe('position', updateProgress);
+	setInterval(updateProgress, 1000);
     </script>
 </head>
 
