@@ -19,6 +19,8 @@
         }
 
         #container {
+            color: var(--content-color);
+
             font-size: 12pt;
 
             overflow-y: hidden;
@@ -86,7 +88,8 @@
         #bg {
             background-size: cover;
             background-position: center;
-            filter: blur(3px) brightness(0.5);
+            filter: blur(3px);
+            opacity: 40%;
             width: 100%;
             height: 100%;
             position: absolute;
@@ -109,8 +112,24 @@
             left: 0;
             width: 0%;
             height: 8px;
-            background-color: white;
+            background-color: var(--accent-color);
             opacity: 50%;
+        }
+
+        #overlay {
+            backdrop-filter: blur(2px);
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            color: var(--content-color);
+            font-size: 14pt;
+            filter: brightness(0.8);
         }
 
         #volume {
@@ -128,7 +147,7 @@
             outline: none;
             flex-grow: 1;
             border-radius: 3px;
-            background-color: white;
+            background-color: var(--content-color);
             height: 4px;
             margin-left: 15px;
         }
@@ -144,7 +163,11 @@
         }
 
         .hidden {
-            display: none;
+            display: none !important;
+        }
+
+        .action svg {
+            filter: drop-shadow(0px 0px 5px var(--content-color));
         }
     </style>
     <script>
@@ -198,6 +221,20 @@
         function capitalizeFirstLetter(val) {
             return String(val).charAt(0).toUpperCase() + String(val).slice(1);
         }
+        function debounce(func, timeout) {
+            let timer;
+            let lastArgs;
+            return function () {
+                lastArgs = arguments;
+                if (timer) {
+                    return;
+                }
+                timer = setTimeout(() => {
+                    timer = 0;
+                    func.apply(null, lastArgs);
+                }, timeout);
+            };
+        }
         setTimeout(() => {
             ['play', 'pause', 'stop', 'prev', 'next'].forEach((key) => {
                 const div = document.getElementById('action-' + key);
@@ -210,9 +247,9 @@
 
 
             const slider = document.querySelector('#volume .slider');
-            slider.oninput = () => {
+            slider.oninput = debounce(() => {
                 requestAction('volume', slider.value);
-            };
+            }, 500);
         }, 0);
         IPS.subscribe('volume', (id, value) => {
             const slider = document.querySelector('#volume .slider');
@@ -222,7 +259,7 @@
             const isPlaying = value === 'play';
             document.getElementById('action-play').classList.toggle('hidden', isPlaying);
             document.getElementById('action-pause').classList.toggle('hidden', !isPlaying);
-
+            document.getElementById('overlay').classList.toggle('hidden', value !== 'stop');
         });
         IPS.subscribe('cover', (id, value) => {
             const div = document.getElementById('cover');
@@ -247,7 +284,7 @@
             let progress = IPS.data.position / IPS.data.duration;
             if (isNaN(progress)) progress = 0;
             const div = document.getElementById('position');
-            div.style.width = Math.round(progress*100) + '%';
+            div.style.width = Math.round(progress * 100) + '%';
         }
         IPS.subscribe('duration', updateProgress);
         IPS.subscribe('position', updateProgress);
@@ -258,6 +295,7 @@
     <div id="container">
         <div id="bg"></div>
         <div id="position"></div>
+        <div id="overlay">Nothing is playing</div>
         <div class="row">
             <div id="cover"></div>
             <div id="details">
@@ -278,12 +316,9 @@
             <div id="volume">
                 <i class="fa-light fa-volume"></i>
                 <input type="range" min="1" max="100" value="0" class="slider" />
-                <div>
-                </div>
-                <div id="progress">
-                    <div></div>
-                    <div>
-                    </div>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>

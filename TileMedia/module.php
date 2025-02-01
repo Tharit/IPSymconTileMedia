@@ -51,7 +51,12 @@ class TileMedia extends IPSModule
 
     public function RequestAction($Ident, $Value)
     {
-        if(in_array($Ident, self::ACTIONS)) {
+	    if(in_array($Ident, ['volume'])) {
+            $var = $this->ReadPropertyInteger($Ident);
+            if($var && @IPS_GetVariable($var)) {
+		        SetValue($var, $Value);
+	        }
+        } else if(in_array($Ident, self::ACTIONS)) {
             $script = $this->ReadPropertyInteger($Ident);
             if($script && @IPS_GetScript($script)) {
                 IPS_RunScriptEx($script, [
