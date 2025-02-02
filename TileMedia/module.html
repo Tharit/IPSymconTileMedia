@@ -247,6 +247,9 @@
 
 
             const slider = document.querySelector('#volume .slider');
+            slider.addEventListener('touchstart', (e) => e.stopPropagation());
+            slider.addEventListener('touchmove', (e) => e.stopPropagation());
+            slider.addEventListener('touchend', (e) => e.stopPropagation());
             slider.oninput = debounce(() => {
                 requestAction('volume', slider.value);
             }, 500);
